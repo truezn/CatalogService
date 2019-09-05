@@ -1,0 +1,71 @@
+
+--- 
+server.port: ${PORT:8010} # get the server port from (CF) environment if present. Otherwise fallback to 8080.
+
+spring:
+  boot:
+   admin:
+    client:
+           url: http://localhost:8000/
+           instance:
+              prefer-ip: true
+
+  # <data source configurations here>
+  # Remote Setup: configurations of the XSUAA authorization server endpoints on SAP CP CF.
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://authentication.eu10.hana.ondemand.com/token_keys
+
+  # Data Source configurations. Change this to the values of your created HANA service instance.
+  datasource:
+    url:             jdbc:sap://localhost:23803?encrypt=true&validateCertificate=false&currentschema=BA2D8BCD9E68449F8EA51509B0FAC068                # see your HANA service instance credentials
+    username:        BA2D8BCD9E68449F8EA51509B0FAC068_F5BZXCDKSRTP34O1Q47AUIX6B_RT  # see your HANA service instance credentials
+    password:        Zq8OJ4u4goBjhritNvzHjKs0O5TfcDWx2yTWF-J44vPvm0vYphRBEkChqjX.es4WRGpfeCHFLbZWe.zGkK.ZS2w23_6upUMWAF0A-t8krirXz65KwD9PuZtX5uN.kszv  # see your HANA service instance credentials
+    driverClassName: com.sap.db.jdbc.Driver
+    type:            com.zaxxer.hikari.HikariDataSource
+
+    hikari:
+      maximumPoolSize: 1
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    web.base-path: /monitor
+
+  endpoint:
+    health:
+      show-details: always
+
+info:
+  app:
+ 
+    name: "CAP+SpringBoot"
+    description: "xxx"
+    version: "1.0"
+    environment: "vscode"
+    spring-boot-version: "2.1.6.RELEASE"
+    spring-admin-version: "2.1.6"
+  version: "1.0"
+
+
+      
+logging.level:
+  com.sap.cloud.cap.spring.bookshop.odatav2: DEBUG # set application log level to DEBUG
+
+---
+# Cloud Foundry Specific Overrides.
+spring:
+  profiles: cloud    # to activate the profile the 'spring.profiles.active' environment property needs to be set. See manifest.yml.
+  datasource:        # read the data source connection properties from VCAP_SERVICES. See manifest.yml for declaration of 'db_service_instance_name'.
+    url:             ${vcap.services.${db_service_instance_name}.credentials.url}
+    username:        ${vcap.services.${db_service_instance_name}.credentials.user}
+    password:        ${vcap.services.${db_service_instance_name}.credentials.password}
+    driverClassName: ${vcap.services.${db_service_instance_name}.credentials.driver}
+    type:            com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximumPoolSize: 10  
